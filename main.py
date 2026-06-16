@@ -7,7 +7,7 @@ def main():
     table_page = st.Page("table.py", title="Tabel", icon=":material/table:")
 
     pg = st.navigation([dashboard_page, table_page])
-    st.set_page_config(page_title="Dashboard Sensus Ekonomi 2026", page_icon=":material/home:")
+    st.set_page_config(page_title="Dashboard Sensus Ekonomi 2026", page_icon=":chart_with_upwards_trend:")
     pg.run()
     
     # st.set_page_config(
