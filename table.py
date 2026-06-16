@@ -56,9 +56,46 @@ def fetch_and_clean_data():
     #   )   
     
     return df
+
+@st.cache_data
+def fetch_lokasi_tugas():
+  url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSQkidoA906lx1B1wWo5gvyjjmpmwCJN9XRFBAcgJcXjFcf6nsY25rQc6fRd9fkwq__HZW93MaCFi3h/pub?output=xlsx"
+  
+  df = pl.read_excel(url)
+  df = (
+    df
+    .select(
+      pl.col(["pml", "pcl", "nmkec", "nmdesa", "nmsls", "jenis"])
+    )
+  )
+  
+  df = (
+    df
+    .with_columns(
+      pml = pl.col("pml").str.to_titlecase(),
+      pcl = pl.col("pcl").str.to_titlecase(),
+      nmkec = pl.col("nmkec").str.to_titlecase(),
+      nmdesa = pl.col("nmdesa").str.to_titlecase()
+      # pl.col("nama_ketua").str.to_titlecase().alias("nama_ketua")
+    )
+    .rename(
+      {
+        "pml": "PML",
+        "pcl": "PPL",
+        "nmkec": "Kecamatan",
+        "nmdesa": "Desa",
+        "nmsls": "SLS",
+        # "nama_ketua": "Ketua SLS",
+        "jenis": "Jenis"
+      }
+    )
+  )
+    
+  return df
   
 
 df_alokasi = fetch_and_clean_data()
+df_lokasi = fetch_lokasi_tugas()
 
 # target_ppl = (
 #   df_alokasi
@@ -99,7 +136,7 @@ target_ppl = (
 
 # target_ppl.columns = ['PPL', 'Target Harian RUTA Termin 1', 'Target Harian Ruta Termin 2', 'Target Harian']
 st.header("Target Pencacahan Harian Sensus Ekonomi 2026", divider=True)
-ppl = st.text_input(label="Cari Nama PPL", icon=":material/search:")
+ppl = st.text_input(label="Cari Nama PPL", icon=":material/search:", placeholder="Ketikan nama PPL")
 
 if ppl == None:
   target_ppl = (
@@ -163,7 +200,7 @@ target_pml = (
     )
   )
   
-pml = st.text_input(label="Cari Nama PML", icon=":material/search:")
+pml = st.text_input(label="Cari Nama PML", icon=":material/search:", placeholder="Ketikan nama PML")
   
 if pml == None:
   target_pml = (
@@ -198,5 +235,52 @@ else:
   st.dataframe(target_pml)
 
 
-# with st.bottom:
-#   st.text("Built with ☕️ by Marwan.")
+st.text("Alokasi Wilayah Tugas")
+# column_options = st.columns(3)
+
+pml_list = (
+  df_lokasi
+  .select(pl.col("PML"))
+  .unique()
+  .to_series()
+)
+
+# pml_list = [i for i in pml_list]
+
+ppl_list = (
+  df_lokasi
+  .select(pl.col("PPL"))
+  .unique()
+  .to_series()
+)
+# ppl_list = [i for i in ppl_list]
+# first_option = ["Semua"]
+
+# pilih_pml = column_options[0].selectbox("Pilih PML", pml_list)
+# pilih_ppl = column_options[1].selectbox("Pilih PPL", ppl_list)
+
+radio = st.radio("Cari Berdasarkan:", options=["PML", "PPL"])
+pml_ppl = st.text_input("Cari Nama", placeholder="Masukan nama PML atau PPL", icon=":material/search:")
+
+if pml_ppl == None:
+  st.dataframe(df_lokasi)
+else:
+  if radio == "PML":
+  # if pml_ppl
+    df_lokasi = (
+      df_lokasi
+      .filter(
+        pl.col("PML").str.contains(pml_ppl) #or pl.col("PPL").str.contains(pml_ppl)
+      )
+    )
+    
+    st.dataframe(df_lokasi)
+  else:
+    df_lokasi = (
+      df_lokasi
+      .filter(
+        pl.col("PPL").str.contains(pml_ppl)
+      )
+    )
+    
+    st.dataframe(df_lokasi)
