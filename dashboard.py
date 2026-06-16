@@ -9,3 +9,6 @@ st.set_page_config(
     )
 st.header("Dashboard Sensus Ekonomi 2026", divider=True)
 
+# with st.bottom:
+#   st.text("Built with ☕️ by Marwan.")
+

@@ -18,6 +18,8 @@ def main():
     # st.header("Dashboard SE2026 BPS Kabupaten Kepulauan Tanimbar")
     # st.title("Dashboard SE2026 BPS Kabupaten Kepulauan Tanimbar")
     
+    with st.bottom:
+        st.text("Built by Marwan with ☕️", text_alignment="right")
     
 
 
