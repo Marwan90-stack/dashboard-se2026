@@ -100,6 +100,7 @@ target_ppl = (
 # target_ppl.columns = ['PPL', 'Target Harian RUTA Termin 1', 'Target Harian Ruta Termin 2', 'Target Harian']
 st.header("Target Pencacahan Harian Sensus Ekonomi 2026", divider=True)
 ppl = st.text_input(label="Cari Nama PPL", icon=":material/search:")
+
 if ppl == None:
   target_ppl = (
     target_ppl
@@ -131,3 +132,67 @@ else:
   )
   
   st.dataframe(target_ppl)
+
+target_pml = (
+  df_alokasi
+  .select(pl.col('pml', 'usaha', 'muatan'))
+  .group_by(pl.col("pml"))
+  .sum()
+  .with_columns(
+    (pl.col("muatan")*0.4).alias("muatan_40"),
+    (pl.col("usaha")*0.4).alias("usaha_40"),
+  )
+  .with_columns(
+    (pl.col("usaha") - pl.col("usaha_40")).alias("usaha_60"),
+    (pl.col("muatan") - pl.col("muatan_40")).alias("muatan_60")
+  )
+  .with_columns(
+    (pl.col("muatan_40")/30).ceil().alias("target_harian_ruta_termin1"),
+    (pl.col("usaha_40")/30).ceil().alias("target_harian_usaha_termin1"),
+    (pl.col("muatan_60")/45).ceil().alias("target_harian_ruta_termin2"),
+    (pl.col("usaha_60")/45).ceil().alias("target_harian_usaha_termin2")
+  )
+  .select(
+    pl.col(
+      'pml', 
+      'target_harian_ruta_termin1', 
+      'target_harian_ruta_termin2', 
+      'target_harian_usaha_termin1', 
+      'target_harian_usaha_termin2'
+      )
+    )
+  )
+  
+pml = st.text_input(label="Cari Nama PML", icon=":material/search:")
+  
+if pml == None:
+  target_pml = (
+    target_pml
+    .rename(
+    {
+      'pml' : 'PML',
+      'target_harian_ruta_termin1': 'Target Harian Ruta Termin 1',
+      'target_harian_ruta_termin2': 'Target Harian Ruta Termin 2',
+      'target_harian_usaha_termin1': 'Target Harian Usaha Termin 1',
+      'target_harian_usaha_termin2': 'Target Harian Usaha Termin 2'
+      }
+    )
+  )
+  st.dataframe(target_pml)
+else:
+  target_pml = (
+    target_pml.filter(
+      pl.col("pml").str.contains(pml)
+    )
+    .rename(
+    {
+      'pml' : 'PML',
+      'target_harian_ruta_termin1': 'Target Harian Ruta Termin 1',
+      'target_harian_ruta_termin2': 'Target Harian Ruta Termin 2',
+      'target_harian_usaha_termin1': 'Target Harian Usaha Termin 1',
+      'target_harian_usaha_termin2': 'Target Harian Usaha Termin 2'
+      }
+    )
+  )
+  
+  st.dataframe(target_pml)
